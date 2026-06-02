@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Figurine My Memory - Suppression d'arrière-plan par IA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: linear-gradient(135deg, #4a0000 0%, #2d0000 100%);
+            min-height: 100vh;
+            padding: 12px;
+            padding-top: 80px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Mobile Menu Styles - Burger Menu */
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, #4a0000, #2d0000);
+            z-index: 10000;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .mobile-logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .burger-menu {
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10001;
+        }
+
+        .burger-line {
+            width: 30px;
+            height: 3px;
+            background: white;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .burger-menu.active .burger-line:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .burger-menu.active .burger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .burger-menu.active .burger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        .mobile-menu-panel {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 70%;
+            max-width: 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, #4a0000, #2d0000);
+            z-index: 9999;
+            transition: left 0.4s ease;
+            padding-top: 80px;
+            padding-left: 25px;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .mobile-menu-panel.active {
+            left: 0;
+        }
+
+        .mobile-menu-panel a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 15px 0;
+            font-size: 1.1rem;
+            font-family: 'Times New Roman', Times, serif;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-panel a:hover {
+            color: #ffcc00;
+            padding-left: 10px;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9998;
+            display: none;
+        }
+
+        .menu-overlay.active {
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-nav {
+                display: none;
+            }
+            body {
+                padding-top: 12px;
+            }
+        }
+
+        /* Banner Styles */
+        .banner {
+            width: 100%;
+            height: 250px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            animation: bannerGlow 3s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background-image: url('site2.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        @media (min-width: 768px) {
+            .banner {
+                height: 350px;
+            }
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.3));
+            border-radius: 24px;
+        }
+
+        .banner-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        .banner-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        @media (min-width: 768px) {
+            .banner-title {
+                font-size: 3.5rem;
+            }
+        }
+
+        .banner-subtitle {
+            font-size: 1rem;
+            color: #ffcccc;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @media (min-width: 768px) {
+            .banner-subtitle {
+                font-size: 1.3rem;
+            }
+        }
+
+        .banner-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes bannerGlow {
+            0% { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 15px 40px rgba(139,0,0,0.5); }
+            100% { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        }
+
+        @keyframes titlePulse {
+            0% { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+            50% { text-shadow: 4px 4px 8px rgba(0,0,0,0.7); }
+            100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            50% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+        }
+
+        /* Enhanced animations for cards */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            animation: fadeInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        }
+
+        .btn-primary, .payment-btn, .clear-btn, .whatsapp-btn {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-primary:hover:not(:disabled), .payment-btn:hover, .clear-btn:hover, .whatsapp-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .upload-area {
+            animation: pulseBorder 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseBorder {
+            0%, 100% { border-color: #8b0000; }
+            50% { border-color: #ff4444; }
+        }
+
+        .upload-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            animation: rotateIcon 0.5s ease;
+        }
+
+        @keyframes rotateIcon {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .result-image {
+            animation: fadeInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .logo {
+            animation: fadeInDown 0.8s ease, textGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% { text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+            50% { text-shadow: 0 0 20px rgba(255,255,255,0.6); }
+        }
+
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+
+        .chatbot-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: bounce 2s ease-in-out infinite;
+            border: 2px solid #ffcc00;
+            overflow: hidden;
+        }
+
+        .chatbot-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(139,0,0,0.5);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .chatbot-button img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .chatbot-window {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10000;
+        }
+
+        @media (max-width: 480px) {
+            .chatbot-window {
+                width: calc(100% - 40px);
+                right: 20px;
+                left: 20px;
+                height: 450px;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chatbot-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .chatbot-header h4 {
+            flex: 1;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.1rem;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .chatbot-close:hover {
+            transform: scale(1.2);
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f5f5f5;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-size: 0.85rem;
+            animation: fadeInUp 0.3s ease;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .bot-message {
+            background: #e0e0e0;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chatbot-input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background: white;
+        }
+
+        .chatbot-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-family: 'Times New Roman', Times, serif;
+            outline: none;
+        }
+
+        .chatbot-send {
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .chatbot-send:hover {
+            transform: scale(1.1);
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 10px 14px;
+            background: #e0e0e0;
+            border-radius: 18px;
+            align-self: flex-start;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 992px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+            .logo {
+                font-size: 2.5rem;
+            }
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #4a0000;
+            font-family: 'Times New Roman', Times, serif;
+            border-bottom: 2px solid #8b0000;
+            padding-bottom: 8px;
+        }
+
+        .upload-area {
+            border: 2px dashed #8b0000;
+            border-radius: 16px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .pricing {
+            background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+            border-radius: 16px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid #8b0000;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #8b0000;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .payment-btn {
+            padding: 12px;
+            border: 2px solid #8b0000;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .payment-btn.selected {
+            border-color: #4a0000;
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            color: white;
+        }
+
+        .phone-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #8b0000;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #8b0000 0%, #4a0000 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .clear-btn {
+            background: #8b0000;
+            margin-top: 10px;
+        }
+
+        .whatsapp-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            margin-top: 10px;
+        }
+
+        .result-area {
+            text-align: center;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #8b0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #8b0000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            background: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            animation: slideInUp 0.3s ease;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .toast.success { border-left: 4px solid #28a745; }
+        .toast.error { border-left: 4px solid #8b0000; }
+        .toast.info { border-left: 4px solid #8b0000; }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #8b0000, #4a0000);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .carousel-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+            border-radius: 20px;
+            border: 1px solid #8b0000;
+        }
+
+        .carousel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            background: white;
+        }
+
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-item {
+            min-width: 100%;
+            text-align: center;
+            padding: 12px;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(139,0,0,0.7);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            border-radius: 50%;
+        }
+
+        .carousel-btn.prev { left: 5px; }
+        .carousel-btn.next { right: 5px; }
+
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: #8b0000;
+            width: 20px;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 90%;
+            width: 350px;
+        }
+
+        .modal-close {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #ff9999 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Navigation Burger Menu -->
+    <div class="mobile-nav">
+        <div class="mobile-logo">Figurine my memory</div>
+        <div class="burger-menu" id="burgerMenu">
+            <div class="burger-line"></div>
+            <div class="burger-line"></div>
+            <div class="burger-line"></div>
+        </div>
+    </div>
+
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+        <a href="#home" class="mobile-link">🏠 Accueil</a>
+        <a href="#upload" class="mobile-link">📸 Télécharger</a>
+        <a href="#payment" class="mobile-link">💳 Paiement</a>
+        <a href="#result" class="mobile-link">✨ Résultat</a>
+        <a href="#contact" class="mobile-link" id="mobileContact">📱 Contact WhatsApp</a>
+    </div>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="container">
+        <!-- BANNER SECTION with site2.jpg -->
+        <div class="banner">
+            <div class="banner-particles" id="particles"></div>
+            <div class="banner-content">
+                <h1 class="banner-title">Figurine My Memory</h1>
+                <p class="banner-subtitle">Transformez vos souvenirs en chefs-d'œuvre numériques</p>
+                <p class="banner-subtitle" style="font-size: 0.9rem; margin-top: 10px;">✨ Suppression d'arrière-plan par intelligence artificielle ✨</p>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1 class="logo">Figurine my memory</h1>
+            <p class="subtitle">Supprimez l'arrière-plan de vos images en quelques secondes</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="card" id="upload">
+                <div class="card-title">1. Telechargez votre image</div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <p>Cliquez ou glissez-deposez une image ici</p>
+                    <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">PNG, JPG, JPEG jusqu'a 10MB</p>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+                <div id="imagePreview" style="text-align: center;"></div>
+                
+                <div class="pricing">
+                    <div style="text-align: center;">
+                        <span class="badge">Prix unique</span>
+                        <div class="price">250 FCFA <small>/ suppression</small></div>
+                        <p style="font-size: 0.7rem; margin-top: 5px;">Paiement securise via Mobile Money</p>
+                    </div>
+                </div>
+
+                <div class="card-title" id="payment">2. Choisissez votre moyen de paiement</div>
+                
+                <div class="payment-methods">
+                    <button class="payment-btn" id="mtnBtn">MTN Mobile Money</button>
+                    <button class="payment-btn" id="orangeBtn">Orange Money</button>
+                </div>
+
+                <input type="tel" id="phoneNumber" class="phone-input" placeholder="Numero de telephone (ex: 691037388)" value="691037388" maxlength="12">
+
+                <button class="btn-primary" id="payAndProcessBtn">Payer 250 FCFA et Supprimer l'arriere-plan</button>
+                <button class="btn-primary clear-btn" id="clearBtn">Effacer tout</button>
+                <button class="btn-primary whatsapp-btn" id="whatsappBtn">📱 Contacter le support WhatsApp</button>
+                
+                <div class="info-text">Aucune inscription requise | Paiement unique par image | Resultat haute qualite</div>
+
+                <div class="carousel-container">
+                    <div class="carousel-title">Exemples de realisations</div>
+                    <div class="carousel">
+                        <div class="carousel-inner" id="carouselInner">
+                            <div class="carousel-item"><img src="site.jpg" alt="Exemple 1"><div class="carousel-caption">Avant suppression</div></div>
+                            <div class="carousel-item"><img src="site1.jpg" alt="Exemple 2"><div class="carousel-caption">Apres suppression</div></div>
+                            <div class="carousel-item"><img src="site2.jpg" alt="Exemple 3"><div class="carousel-caption">Resultat professionnel</div></div>
+                            <div class="carousel-item"><img src="site3.jpg" alt="Exemple 4"><div class="carousel-caption">Qualite HD</div></div>
+                        </div>
+                        <button class="carousel-btn prev" id="prevBtn">⟨</button>
+                        <button class="carousel-btn next" id="nextBtn">⟩</button>
+                    </div>
+                    <div class="carousel-dots" id="carouselDots"></div>
+                </div>
+            </div>
+
+            <div class="card" id="result">
+                <div class="card-title">Resultat apres suppression</div>
+                <div id="resultArea" class="result-area">
+                    <div style="text-align: center; color: #999; padding: 30px 15px;">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;"></div>
+                        <p>Aucune image traitee pour le moment</p>
+                        <p style="font-size: 0.7rem;">Telechargez une image, payez et voyez la magie operer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="requestModal" class="modal">
+        <div class="modal-content">
+            <h3>✅ Demande envoyée !</h3>
+            <p>Votre requête a été envoyée à l'administrateur. Vous recevrez une confirmation sous peu.</p>
+            <p style="font-size: 0.8rem; color: #8b0000;">Merci de patienter quelques instants.</p>
+            <button class="modal-close" onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <!-- CHATBOT -->
+    <div class="chatbot-container">
+        <div class="chatbot-button" id="chatbotButton">
+            <img src="sara.png" alt="Sara" onerror="this.src='https://via.placeholder.com/60/8b0000/white?text=Sara'">
+            <div class="notification-badge" id="notificationBadge">1</div>
+        </div>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <img src="sara.png" alt="Sara" onerror="this.src='https://via.placeholder.com/40/8b0000/white?text=Sara'">
+                <h4>Sara - Assistance</h4>
+                <button class="chatbot-close" id="chatbotClose">×</button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">Bonjour ! 👋 Je suis Sara, votre assistante virtuelle. Comment puis-je vous aider aujourd'hui ?</div>
+                <div class="message bot-message">Je peux vous renseigner sur :<br>• La suppression d'arrière-plan par IA<br>• Les moyens de paiement (MTN/Orange Money)<br>• Les tarifs (250 FCFA par image)<br>• Le support technique</div>
+            </div>
+            <div class="chatbot-input-container">
+                <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Ecrivez votre message...">
+                <button class="chatbot-send" id="chatbotSend">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_KEY = 'vyeyGyKBF2AMdhZS9n4Wtczv';
+        const ADMIN_NUMBER = '237691037385'; // Numéro de l'admin qui reçoit les requêtes
+        const SUPPORT_NUMBER = '237691037388'; // Numéro de support client
+        const DEFAULT_OM_NUMBER = '691037388';
+        
+        let selectedImageFile = null;
+        let originalImageUrl = null;
+        let processedImageUrl = null;
+        let selectedPaymentMethod = null;
+        let currentIndex = 0;
+        const totalSlides = 4;
+        let autoSlideInterval;
+        
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const resultArea = document.getElementById('resultArea');
+        const mtnBtn = document.getElementById('mtnBtn');
+        const orangeBtn = document.getElementById('orangeBtn');
+        const phoneInput = document.getElementById('phoneNumber');
+        const payAndProcessBtn = document.getElementById('payAndProcessBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const whatsappBtn = document.getElementById('whatsappBtn');
+        const carouselInner = document.getElementById('carouselInner');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const carouselDots = document.getElementById('carouselDots');
+        const modal = document.getElementById('requestModal');
+        
+        // Burger Menu Elements
+        const burgerMenu = document.getElementById('burgerMenu');
+        const mobileMenuPanel = document.getElementById('mobileMenuPanel');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+        const mobileContact = document.getElementById('mobileContact');
+        
+        // Chatbot Elements
+        const chatbotButton = document.getElementById('chatbotButton');
+        const chatbotWindow = document.getElementById('chatbotWindow');
+        const chatbotClose = document.getElementById('chatbotClose');
+        const chatbotMessages = document.getElementById('chatbotMessages');
+        const chatbotInput = document.getElementById('chatbotInput');
+        const chatbotSend = document.getElementById('chatbotSend');
+        const notificationBadge = document.getElementById('notificationBadge');
+        
+        // Burger Menu Functions
+        function toggleMenu() {
+            burgerMenu.classList.toggle('active');
+            mobileMenuPanel.classList.toggle('active');
+            menuOverlay.classList.toggle('active');
+            document.body.style.overflow = mobileMenuPanel.classList.contains('active') ? 'hidden' : '';
+        }
+        
+        function closeMenu() {
+            burgerMenu.classList.remove('active');
+            mobileMenuPanel.classList.remove('active');
+            menuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        burgerMenu.addEventListener('click', toggleMenu);
+        menuOverlay.addEventListener('click', closeMenu);
+        mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+        
+        mobileContact.addEventListener('click', () => {
+            window.open(`https://wa.me/${SUPPORT_NUMBER}?text=${encodeURIComponent('Bonjour, j\'ai besoin d\'aide pour la suppression d\'arrière-plan.')}`, '_blank');
+        });
+        
+        // Chatbot Functions
+        const botResponses = {
+            'bonjour': 'Bonjour ! Je suis Sara, votre assistante. Comment puis-je vous aider ?',
+            'salut': 'Salut ! Besoin d\'aide pour supprimer un arrière-plan ? Je suis là pour vous guider.',
+            'prix': 'Le prix est de 250 FCFA par suppression d\'arrière-plan. Paiement sécurisé via MTN Mobile Money ou Orange Money.',
+            'tarif': 'Le tarif est de 250 FCFA par image. Qualité professionnelle garantie !',
+            'paiement': 'Nous acceptons les paiements via MTN Mobile Money et Orange Money. Sélectionnez votre méthode et entrez votre numéro.',
+            'comment': 'Voici comment ça fonctionne :\n1. Téléchargez votre image\n2. Choisissez MTN ou Orange Money\n3. Entrez votre numéro de téléphone\n4. Cliquez sur "Payer 250 FCFA"\n5. Après validation, l\'arrière-plan est supprimé automatiquement',
+            'suppression': 'Notre IA de pointe supprime l\'arrière-plan automatiquement en quelques secondes. Résultat en haute définition !',
+            'aide': 'Je peux vous aider avec les paiements, la suppression d\'image, ou vous orienter vers notre support WhatsApp.',
+            'contact': 'Vous pouvez nous contacter via le bouton WhatsApp vert ou sur le numéro +237 691 037 388',
+            'whatsapp': 'Cliquez sur le bouton WhatsApp vert pour contacter directement notre équipe support !',
+            'merci': 'Avec plaisir ! N\'hésitez pas si vous avez d\'autres questions. Bonne journée !',
+            'default': 'Je suis Sara, votre assistante virtuelle. Pour toute question sur nos services, n\'hésitez pas à me demander ! Ou contactez notre support WhatsApp.'
+        };
+        
+        function addMessage(text, isUser = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            msgDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatbotMessages.appendChild(msgDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+        
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'typing-indicator';
+            typing.id = 'typingIndicator';
+            typing.innerHTML = '<span></span><span></span><span></span>';
+            chatbotMessages.appendChild(typing);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+        
+        function removeTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+        
+        function getBotResponse(msg) {
+            const lower = msg.toLowerCase().trim();
+            for (const [key, resp] of Object.entries(botResponses)) {
+                if (lower.includes(key)) return resp;
+            }
+            return botResponses.default;
+        }
+        
+        async function handleUserMessage(msg) {
+            if (!msg.trim()) return;
+            addMessage(msg, true);
+            chatbotInput.value = '';
+            showTyping();
+            setTimeout(() => {
+                removeTyping();
+                addMessage(getBotResponse(msg));
+            }, 800);
+        }
+        
+        chatbotButton.addEventListener('click', () => {
+            chatbotWindow.style.display = 'flex';
+            notificationBadge.style.display = 'none';
+        });
+        chatbotClose.addEventListener('click', () => chatbotWindow.style.display = 'none');
+        chatbotSend.addEventListener('click', () => handleUserMessage(chatbotInput.value));
+        chatbotInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserMessage(chatbotInput.value);
+        });
+        
+        function closeModal() { modal.style.display = 'none'; }
+        function showModal() { modal.style.display = 'flex'; }
+        
+        function showToast(msg, type) {
+            const existingToasts = document.querySelectorAll('.toast');
+            existingToasts.forEach(toast => toast.remove());
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✗' : 'i'}</span><span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+        
+        // Carousel
+        function updateCarousel() {
+            carouselInner.style.transform = `translateX(-${currentIndex * 100}%)`;
+            document.querySelectorAll('.dot').forEach((dot, i) => {
+                i === currentIndex ? dot.classList.add('active') : dot.classList.remove('active');
+            });
+        }
+        function nextSlide() { currentIndex = (currentIndex + 1) % totalSlides; updateCarousel(); }
+        function prevSlide() { currentIndex = (currentIndex - 1 + totalSlides) % totalSlides; updateCarousel(); }
+        function startAutoSlide() { autoSlideInterval = setInterval(nextSlide, 5000); }
+        
+        function initCarousel() {
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                if (i === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => { currentIndex = i; updateCarousel(); });
+                carouselDots.appendChild(dot);
+            }
+            prevBtn.addEventListener('click', () => { prevSlide(); clearInterval(autoSlideInterval); startAutoSlide(); });
+            nextBtn.addEventListener('click', () => { nextSlide(); clearInterval(autoSlideInterval); startAutoSlide(); });
+            startAutoSlide();
+        }
+        initCarousel();
+        
+        // Upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('drag-over'); });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) handleImageFile(file);
+            else showToast('Veuillez déposer un fichier image valide', 'error');
+        });
+        fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleImageFile(e.target.files[0]); });
+        
+        function handleImageFile(file) {
+            if (file.size > 10 * 1024 * 1024) { showToast('L\'image ne doit pas dépasser 10MB', 'error'); return; }
+            selectedImageFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                originalImageUrl = e.target.result;
+                imagePreview.innerHTML = `<img src="${originalImageUrl}" class="preview-image"><p style="margin-top:8px;color:#28a745;">✅ Image chargée avec succès !</p>`;
+                showToast('Image chargée avec succès', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        mtnBtn.addEventListener('click', () => {
+            selectedPaymentMethod = 'mtn';
+            mtnBtn.classList.add('selected');
+            orangeBtn.classList.remove('selected');
+            showToast('MTN Mobile Money sélectionné', 'info');
+        });
+        orangeBtn.addEventListener('click', () => {
+            selectedPaymentMethod = 'orange';
+            orangeBtn.classList.add('selected');
+            mtnBtn.classList.remove('selected');
+            showToast('Orange Money sélectionné', 'info');
+        });
+        whatsappBtn.addEventListener('click', () => {
+            window.open(`https://wa.me/${SUPPORT_NUMBER}?text=${encodeURIComponent('Bonjour, j\'ai besoin d\'aide pour la suppression d\'arrière-plan.')}`, '_blank');
+        });
+        
+        async function removeBackground(imageFile) {
+            const formData = new FormData();
+            formData.append('image_file', imageFile);
+            formData.append('size', 'auto');
+            const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+                method: 'POST',
+                headers: { 'X-Api-Key': API_KEY },
+                body: formData
+            });
+            if (!response.ok) {
+                let errorMsg = 'Erreur lors de la suppression';
+                try { const err = await response.json(); errorMsg = err.errors?.[0]?.title || errorMsg; } catch(e) {}
+                throw new Error(errorMsg);
+            }
+            const blob = await response.blob();
+            return URL.createObjectURL(blob);
+        }
+        
+        // Envoi de la requête à l'admin via WhatsApp
+        payAndProcessBtn.addEventListener('click', async () => {
+            if (!selectedImageFile) { showToast('Veuillez d\'abord télécharger une image', 'error'); return; }
+            if (!selectedPaymentMethod) { showToast('Veuillez choisir un moyen de paiement', 'error'); return; }
+            const phone = phoneInput.value.trim();
+            if (!phone || !/^[0-9]{9,12}$/.test(phone)) { showToast('Numéro invalide (9-12 chiffres)', 'error'); return; }
+            
+            payAndProcessBtn.disabled = true;
+            payAndProcessBtn.innerHTML = '⏳ Envoi de la requête...';
+            
+            // Message professionnel pour l'admin
+            const date = new Date();
+            const dateStr = date.toLocaleString('fr-FR');
+            const adminMessage = `🏢 *FIGURINE MY MEMORY - NOUVELLE COMMANDE*
+━━━━━━━━━━━━━━━━━━━━━
+📅 *Date :* ${dateStr}
+👤 *Client :* +${phone}
+💳 *Moyen de paiement :* ${selectedPaymentMethod === 'mtn' ? 'MTN Mobile Money' : 'Orange Money'}
+💰 *Montant :* 250 FCFA
+🖼️ *Service :* Suppression d'arrière-plan par IA
+━━━━━━━━━━━━━━━━━━━━━
+✅ *Statut :* En attente de validation
+🔗 *Action requise :* Veuillez valider le paiement pour traiter l'image
+
+_Message généré automatiquement par Figurine My Memory_`;
+            
+            // Ouvrir WhatsApp avec le message pour l'admin
+            window.open(`https://wa.me/${ADMIN_NUMBER}?text=${encodeURIComponent(adminMessage)}`, '_blank');
+            
+            // Afficher le modal de confirmation
+            showModal();
+            payAndProcessBtn.innerHTML = '✅ Demande envoyée - En attente validation';
+            
+            // Stocker l'image pour traitement ultérieur
+            window.pendingImageFile = selectedImageFile;
+        });
+        
+        // Fonction pour l'admin - traitement après validation
+        window.processAfterValidation = async function() {
+            if (!window.pendingImageFile) { showToast('Aucune demande en attente de traitement', 'error'); return false; }
+            try {
+                showToast('🔄 Traitement de l\'image en cours...', 'info');
+                const resultUrl = await removeBackground(window.pendingImageFile);
+                processedImageUrl = resultUrl;
+                resultArea.innerHTML = `
+                    <img src="${processedImageUrl}" class="result-image">
+                    <div>
+                        <a href="${processedImageUrl}" download="background_removed.png" class="download-btn">📥 Télécharger l'image</a>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.7rem; color: #28a745;">✅ Image traitée avec succès !</p>
+                `;
+                showToast('Arrière-plan supprimé avec succès !', 'success');
+                window.pendingImageFile = null;
+                return true;
+            } catch(error) {
+                console.error('Erreur:', error);
+                showToast(error.message, 'error');
+                return false;
+            }
+        };
+        
+        // Clear everything
+        clearBtn.addEventListener('click', () => {
+            selectedImageFile = null;
+            selectedPaymentMethod = null;
+            if (processedImageUrl) URL.revokeObjectURL(processedImageUrl);
+            imagePreview.innerHTML = '';
+            resultArea.innerHTML = `<div style="text-align:center;color:#999;padding:30px"><div style="font-size:2.5rem;">🖼️</div><p>Aucune image traitée pour le moment</p><p style="font-size:0.7rem;">Téléchargez une image, payez et voyez la magie opérer</p></div>`;
+            phoneInput.value = DEFAULT_OM_NUMBER;
+            mtnBtn.classList.remove('selected');
+            orangeBtn.classList.remove('selected');
+            fileInput.value = '';
+            selectedPaymentMethod = null;
+            payAndProcessBtn.disabled = false;
+            payAndProcessBtn.innerHTML = '💳 Payer 250 FCFA et Supprimer l\'arrière-plan';
+            showToast('Tout a été effacé', 'info');
+        });
+        
+        phoneInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 12);
+        });
+        
+        // Particles animation for banner
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                const size = Math.random() * 8 + 2;
+                p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*5}s;animation-duration:${Math.random()*4+3}s`;
+                container.appendChild(p);
+            }
+        }
+        createParticles();
+        
+        // Initialisation
+        console.log('✅ Application Figurine My Memory prête !');
+        console.log('📱 Admin WhatsApp:', ADMIN_NUMBER);
+        console.log('💬 Support client:', SUPPORT_NUMBER);
+        console.log('');
+        console.log('🔴 INSTRUCTIONS POUR L\'ADMINISTRATEUR :');
+        console.log('1. Quand un client envoie une demande, vous recevez un message WhatsApp');
+        console.log('2. Après avoir confirmé le paiement, ouvrez la console F12 et tapez :');
+        console.log('   👉 window.processAfterValidation()');
+        console.log('3. L\'image sera alors traitée automatiquement');
+        
+        showToast('🎉 Bienvenue sur Figurine My Memory ! Téléchargez une image pour commencer', 'info');
+    </script>
+</body>
+</html>
